@@ -1,11 +1,16 @@
 {
-  "compilerOptions": {
-    "outDir": "./built/",
-    "noImplicitAny": true,
-    "target": "es5",
-    "allowJs": false
-  },
-  "exclude": [
-    "node_modules"
-  ]
+	"compilerOptions": {
+		"noImplicitAny": true,
+		"target": "es5",
+		"types": [],
+		"lib": ["DOM", "ES2015"],
+		"outDir": "built",
+		"sourceMap": true
+	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules"
+	]
 }

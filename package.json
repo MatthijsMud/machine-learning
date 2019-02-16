@@ -16,6 +16,7 @@
     "@tensorflow/tfjs": "^0.14.2"
   },
   "devDependencies": {
+    "@types/es6-promise": "^3.3.0",
     "ts-loader": "^5.3.3",
     "typedoc": "^0.13.0",
     "typedoc-webpack-plugin": "^1.1.4",
