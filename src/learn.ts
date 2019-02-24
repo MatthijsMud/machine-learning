@@ -24,9 +24,6 @@ import tf = require("@tensorflow/tfjs");
 */
 const model = tf.sequential();
 
-const IMAGE_WIDTH = 28;
-const IMAGE_HEIGHT = 28;
-
 /**
  * @summary Number of color channels in the provided images.
  * @description The images
@@ -44,27 +41,72 @@ model.add(tf.layers.conv2d({
 	activation: "relu"
 }));
 
+model.add(tf.layers.maxPooling2d({
+	poolSize: 2,
+	strides: 2
+}));
+
+model.add(tf.layers.conv2d({
+	kernelSize: 3,
+	filters: 32,
+	activation: "relu"
+}));
+
+model.add(tf.layers.maxPooling2d({
+	poolSize: 2,
+	strides: 2
+}));
+
+model.add(tf.layers.conv2d({
+	kernelSize: 3,
+	filters: 32,
+	activation: "relu"
+}));
+
+model.add(tf.layers.flatten({}));
+
+model.add(tf.layers.dense({
+	units: 64,
+	activation: "relu"
+}));
+
 // Output layer. The result is the likelyhood for the input image to be part of
 // each classification. It is assumed that said image is actually part of at
 // least one of those classes.
 model.add(tf.layers.dense({
-
-	// The application is intended to distinguish between two objects.
-	units: 2,
+	units: 10,
 	// Softmax makes it so the totals add up to exactly one. The sets are mutually
 	// exclusive after all.
 	activation: "softmax"
 }));
 
-model.compile({
-	optimizer: "rmsprop",
-	loss: "categoricalCrossentropy",
-  metrics: ["accuracy"]
-});
 
-function train(model:tf.Model)
+
+function train(model:tf.Model, callback:Function)
 {
+	const optimizer = "rmsprop";
 
+	model.compile({
+
+		optimizer: optimizer,
+		loss: "categoricalCrossentropy",
+	  metrics: ["accuracy"]
+	});
+
+	const batchSize:number = 10;
+
+	const validationSplit = 0.15;
+
+
+
+	const data = Array.prototype.slice.call(document.body.getElementsByTagName("img"));
+	const labels = tf.tensor([1]);
+	model.fit(data, labels);
+
+	callback();
 }
 
-train(model);
+train(model, function()
+{
+
+});
