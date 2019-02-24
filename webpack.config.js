@@ -2,7 +2,6 @@
 // https://webpack.js.org/guides/typescript/#src/components/Sidebar/Sidebar.jsx
 
 var path = require("path");
-var typedoc = require("typedoc-webpack-plugin");
 
 module.exports = {
 	// Specify all different entry points that should get compiled to a separate
@@ -66,16 +65,5 @@ module.exports = {
 		extensions: [".tsx", ".ts", ".js"]
 	},
 	plugins: [
-		// Generates documentation for the project.
-		new typedoc({
-			// For all options, see the following link.
-			// https://github.com/TypeStrong/typedoc#arguments
-
-			// Specifies whether the members of all files get clumped together
-			// ("file"), or are kept separate ("modules").
-			mode: "modules",
-			 // Places the docs folder at the project root.
-			out: "../docs"
-		})
 	]
 }
