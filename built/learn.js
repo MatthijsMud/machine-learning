@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("@tensorflow/tfjs"));
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define(["tensorflow"], factory);
 	else {
-		var a = factory();
+		var a = typeof exports === 'object' ? factory(require("@tensorflow/tfjs")) : factory(root["tf"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(window, function() {
+})(window, function(__WEBPACK_EXTERNAL_MODULE__tensorflow_tfjs__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -156,109 +156,125 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @summary Indicates in which state the dataset is. Certain actions are only
- * available in a given state.
- */
-var State;
-(function (State) {
-    /**
-     * @summary Indicates the dataset is being initialized.
-     * @description While initializing a dataset, labels can be added to certain
-     * images.
-     */
-    State[State["initializing"] = 0] = "initializing";
-    /**
-     *
-     */
-    State[State["loading"] = 1] = "loading";
-    /**
-     *
-     */
-    State[State["complete"] = 2] = "complete";
-})(State || (State = {}));
+var tf = __webpack_require__(/*! @tensorflow/tfjs */ "@tensorflow/tfjs");
 ;
-/**
- *
- */
 var DataSet = /** @class */ (function () {
-    /**
-     * @param width
-     * @param height
-     */
-    function DataSet(width, height) {
-        this._state = State.initializing;
-        this._images = {};
-        this._width = width;
-        this._height = height;
+    function DataSet() {
+        this._labels = [];
+        this._dataPoints = [];
     }
-    /**
-     * @summary Adds the specified data to the set.
-     * @throws
-     */
-    DataSet.prototype.add = function (label, urls) {
-        var _this = this;
-        if (_this._state == State.initializing) {
-            urls.forEach(function (url) {
-                if (!(url in _this._images)) {
-                    _this._images[url] = { labels: new Set(), image: null };
-                }
-                _this._images[url].labels.add(label);
-            });
-            // Allow for chaining calls.
-            return _this;
-        }
-        throw new TypeError("Data can only be added when initializing.");
-    };
-    /**
-     * @summary Loads a dataset
-     * @description Causes the given dataset to enter the loading state
-     * (`State.loading`). No more data can be added to the dataset at this point.
-     */
-    DataSet.prototype.load = function () {
+    DataSet.prototype.load = function (folder) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this, promises, key;
+            var _this;
             return __generator(this, function (_a) {
                 _this = this;
-                if (this._state == State.initializing) {
-                    this._state = State.loading;
-                    promises = [];
-                    for (key in this._images) {
-                        promises[promises.length] = loadImage(key).then(function (result) {
-                            var image = result.image;
-                            // TODO: Perform checks to make sure the size of the image is correct.
-                            if (!(image.width === _this._width && image.height === _this._height)) {
-                                throw new TypeError("Image dimensions do not match the specifications.");
-                            }
-                            _this._images[result.key].image = image;
-                            return image;
+                return [2 /*return*/, this.loadIndex(folder).then(function (dataPoints) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var loadingDataPoints, _i, dataPoints_1, dataPoint;
+                            return __generator(this, function (_a) {
+                                console.log("Dataset description has been loaded. Start loading the data.");
+                                console.groupCollapsed("Started loading files");
+                                loadingDataPoints = [];
+                                for (_i = 0, dataPoints_1 = dataPoints; _i < dataPoints_1.length; _i++) {
+                                    dataPoint = dataPoints_1[_i];
+                                    loadingDataPoints[loadingDataPoints.length] = _this.loadDataPoint(folder, dataPoint);
+                                }
+                                console.groupEnd();
+                                return [2 /*return*/, Promise.all(loadingDataPoints).then(function () {
+                                        console.log("Finished loading dataset", folder);
+                                        return _this;
+                                    })];
+                            });
                         });
-                    }
-                    return [2 /*return*/, Promise.all(promises).then(function () {
-                            _this._state = State.complete;
-                            return _this;
-                        })];
-                }
-                throw 1;
+                    })];
             });
+        });
+    };
+    Object.defineProperty(DataSet.prototype, "labels", {
+        get: function () {
+            return this._labels.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DataSet.prototype.asTensor = function () {
+        // This operation expects all images to be the same size.
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        var images = [];
+        var width = 0;
+        var height = 0;
+        for (var _i = 0, _a = this._dataPoints; _i < _a.length; _i++) {
+            var dataPoint = _a[_i];
+            width = dataPoint.image.width;
+            height = dataPoint.image.height;
+            canvas.width = width;
+            canvas.height = height;
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(dataPoint.image, 0, 0);
+            var data = ctx.getImageData(0, 0, width, height).data;
+            // Treat the images as grayscale.
+            var image = new Array(height);
+            for (var y = 0; y < height; ++y) {
+                image[y] = new Array(width);
+                for (var x = 0; x < width; ++x) {
+                    var index = y * width + x;
+                    // RGBA image to grayscale image. Since the input images should
+                    // already be grayscale images, each channel (aside from transparity)
+                    // should be the same value. Pick red.
+                    image[y][x] = data[index * 4];
+                }
+            }
+            images.push(image);
+        }
+        return tf.tensor(images);
+    };
+    DataSet.prototype.loadIndex = function (folder) {
+        return new Promise(function (resolve, reject) {
+            var loader = new XMLHttpRequest();
+            loader.addEventListener("load", function () {
+                try {
+                    console.log(loader.response);
+                    resolve(loader.response);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+            loader.addEventListener("error", function () {
+                reject();
+            });
+            loader.responseType = "json";
+            loader.open("GET", [folder, "index.json"].join("/"));
+            loader.send();
+        });
+    };
+    DataSet.prototype.loadDataPoint = function (folder, dataPoint) {
+        var _this = this;
+        console.log("Start loading", dataPoint.name);
+        return new Promise(function (resolve, reject) {
+            var image = new Image();
+            image.addEventListener("load", function () {
+                dataPoint.image = image;
+                for (var _i = 0, _a = dataPoint.labels; _i < _a.length; _i++) {
+                    var label = _a[_i];
+                    if (_this._labels.indexOf(label) === -1) {
+                        _this._labels.push(label);
+                    }
+                }
+                _this._dataPoints.push(dataPoint);
+                resolve(dataPoint);
+            });
+            image.addEventListener("error", function (e) {
+                reject("Failed to load " + image.src);
+            });
+            image.src = [folder, dataPoint.name].join("/");
         });
     };
     return DataSet;
 }());
 exports.default = DataSet;
-function loadImage(url) {
-    return new Promise(function (resolve, reject) {
-        var image = new Image();
-        image.src = url;
-        image.addEventListener("load", function () {
-            resolve({ image: image, key: url });
-        });
-        image.addEventListener("error", function (e) {
-            console.error("Could not load " + url);
-            reject(e.error);
-        });
-    });
-}
+;
 
 
 /***/ }),
@@ -296,22 +312,32 @@ var IMAGE_HEIGHT = 56;
  */
 var FULL_CIRCLE = 360;
 var STEP_SIZE = 5;
-new dataset_1.default(IMAGE_WIDTH, IMAGE_HEIGHT)
-    .add("nut", PathGenerator("data/nut_sideways", FULL_CIRCLE / STEP_SIZE))
-    .add("nut", PathGenerator("data/nut_top", FULL_CIRCLE / STEP_SIZE))
-    .add("nut", PathGenerator("data/nut_bottom", FULL_CIRCLE / STEP_SIZE))
-    .add("bolt", PathGenerator("data/bolt_sideways", FULL_CIRCLE / STEP_SIZE))
-    .add("bolt", PathGenerator("data/bolt_top", FULL_CIRCLE / STEP_SIZE))
-    .add("bolt", PathGenerator("data/bolt_bottom", FULL_CIRCLE / STEP_SIZE))
-    .load().then(function (dataset) {
+new dataset_1.default().load("data/bolt_sideways").then(function (set) {
+    console.log(set.labels);
+    set.asTensor().print();
+}).catch(function (reason) {
+    console.error("Failed to load dataset.", reason);
+});
+/*
+new DataSet(IMAGE_WIDTH, IMAGE_HEIGHT)
+.add("nut", PathGenerator("data/nut_sideways", FULL_CIRCLE / STEP_SIZE))
+.add("nut", PathGenerator("data/nut_top", FULL_CIRCLE / STEP_SIZE))
+.add("nut", PathGenerator("data/nut_bottom", FULL_CIRCLE / STEP_SIZE))
+.add("bolt", PathGenerator("data/bolt_sideways", FULL_CIRCLE / STEP_SIZE))
+.add("bolt", PathGenerator("data/bolt_top", FULL_CIRCLE / STEP_SIZE))
+.add("bolt", PathGenerator("data/bolt_bottom", FULL_CIRCLE / STEP_SIZE))
+.load().then(function(dataset:DataSet)
+{
     console.log(dataset);
-    var finished = document.createElement("div");
+    let finished = document.createElement("div");
     finished.innerHTML = "Finished";
     document.body.appendChild(finished);
 })
-    .catch(function (reason) {
+.catch(function(reason:any)
+{
     console.error(reason);
 });
+*/
 /**
  * @summary Generates a number of urls based on the parameters.
  * @description The path is generated by appending numbers (padded with `0`) to
@@ -328,6 +354,17 @@ function PathGenerator(folder, count) {
     });
 }
 
+
+/***/ }),
+
+/***/ "@tensorflow/tfjs":
+/*!**************************************************************************************************************!*\
+  !*** external {"commonjs":"@tensorflow/tfjs","commonjs2":"@tensorflow/tfjs","amd":"tensorflow","root":"tf"} ***!
+  \**************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__tensorflow_tfjs__;
 
 /***/ })
 
