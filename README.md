@@ -4,4 +4,4 @@ The intent is to distinguish between nuts and bolts. Any other categories that c
 
 The code is heavily inspired by "[Training on Images: Recognizing Handwritten Digits with a Convolutional Neural Network](https://js.tensorflow.org/tutorials/mnist.html)", as it does basically the same but with a different dataset and categories.
 
-~~Images in the dataset are rendered 3D models, created with [Blender](https://www.blender.org/). An image size of 28×28 pixels seems to be the standard for machine learning, hence it is also used for those images.~~ (Still needs to be done.)
+Images in the dataset are rendered 3D models, created with [Blender](https://www.blender.org/).
