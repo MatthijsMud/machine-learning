@@ -16,151 +16,105 @@
 
 import tf = require("@tensorflow/tfjs");
 
-/**
- * @summary Indicates in which state the dataset is. Certain actions are only
- * available in a given state.
- */
-enum State
+interface DataPoint
 {
-	/**
-	 * @summary Indicates the dataset is being initialized.
-	 * @description While initializing a dataset, labels can be added to certain
-	 * images.
-	 */
-	initializing,
-	/**
-	 *
-	 */
-	loading,
-	/**
-	 *
-	 */
-	complete
+	name:string;
+	labels:Array<string>;
+	image:HTMLImageElement;
 };
 
-/**
- *
- */
 export default class DataSet
 {
-	private _state:State;
+	private _labels:Array<string>
 
-	/**
-	 *
-	 */
-	private _width:number|undefined;
-	private _height:number|undefined;
-
-	private _images:{[key:string]:{labels:Set<string>, image:HTMLImageElement}};
-
-	/**
-	 * While it could have been a set, the standard does not guarantee an order.
-	 * Considering the order should remain unchanged between calls,
-	 */
-	private _labels:string[];
-
-	/**
-	 * @param width
-	 * @param height
-	 */
-	public constructor(
-		width:number,
-		height:number
-	)
+	public constructor()
 	{
-		this._state = State.initializing;
-		this._images = {};
 		this._labels = [];
-
-		this._width = width;
-		this._height = height;
 	}
 
-	/**
-	 * @summary Adds the specified data to the set.
-	 * @throws
-	 */
-	public add(label:string, urls:Array<string>):DataSet
-	{
-		let _this:DataSet = this;
-		if (_this._state == State.initializing)
-		{
-			// Make sure we are
-			if (_this._labels.indexOf(label) == -1)
-			{
-				_this._labels.push(label);
-			}
-			urls.forEach(function(url)
-			{
-				if (!(url in _this._images))
-				{
-					_this._images[url] = { labels: new Set<string>(), image: null };
-				}
-				_this._images[url].labels.add(label);
-			});
-			// Allow for chaining calls.
-			return _this;
-		}
-		throw new TypeError("Data can only be added when initializing.");
-	}
-
-	public labels(): tf.Tensor
-	{
-
-		return tf.tensor([1,1]);
-	}
-
-	/**
-	 * @summary Loads a dataset
-	 * @description Causes the given dataset to enter the loading state
-	 * (`State.loading`). No more data can be added to the dataset at this point.
-	 */
-	public async load(): Promise<DataSet>
+	public async load(folder:string):Promise<DataSet>
 	{
 		let _this = this;
-		if (this._state == State.initializing)
+		return this.loadIndex(folder).then(async function(dataPoints:Array<DataPoint>):Promise<DataSet>
 		{
-			this._state = State.loading;
-			let promises:Array<Promise<HTMLImageElement>> = [];
-
-			for (let key in this._images)
+			console.log("Dataset description has been loaded. Start loading the data.");
+			console.groupCollapsed("Started loading files");
+			let loadingDataPoints:Array<Promise<DataPoint>> = [];
+			for (let dataPoint of dataPoints)
 			{
-				promises[promises.length] = loadImage(key).then<HTMLImageElement>(function(result)
-				{
-					let image = result.image;
-					// TODO: Perform checks to make sure the size of the image is correct.
-					if (!(image.width === _this._width && image.height === _this._height))
-					{
-						throw new TypeError("Image dimensions do not match the specifications.");
-					}
-					_this._images[result.key].image = image;
-					return image;
-				});
+				 loadingDataPoints[loadingDataPoints.length] = _this.loadDataPoint(folder, dataPoint);
 			}
-			return Promise.all(promises).then<DataSet>(function()
+			console.groupEnd();
+			return Promise.all(loadingDataPoints).then(function()
 			{
-				_this._state = State.complete;
+				console.log("Finished loading dataset", folder);
 				return _this;
 			});
-		}
-		throw 1;
+		});
 	}
-}
 
-function loadImage(url:string):Promise<{image: HTMLImageElement, key:string}>
-{
-	return new Promise(function(resolve, reject)
+	public get labels():Array<string>
 	{
-		let image = new Image();
-		image.src = url;
-		image.addEventListener("load", function()
+		return this._labels.slice();
+	}
+
+	public asTensor():tf.Tensor
+	{
+		return tf.tensor([],[]);
+	}
+
+	private loadIndex(folder:string):Promise<Array<DataPoint>>
+	{
+		return new Promise(function(resolve, reject)
 		{
-			resolve({image: image, key: url});
+			let loader = new XMLHttpRequest();
+			loader.addEventListener("load", function()
+			{
+				try
+				{
+					console.log(loader.response);
+					resolve(loader.response as Array<DataPoint>);
+				}
+				catch(e)
+				{
+					reject(e);
+				}
+			});
+			loader.addEventListener("error", function()
+			{
+				reject();
+			});
+			loader.responseType = "json";
+			loader.open("GET", [folder, "index.json"].join("/"));
+			loader.send();
 		});
-		image.addEventListener("error", function(e)
+	}
+
+	private loadDataPoint(folder:string, dataPoint:DataPoint):Promise<DataPoint>
+	{
+		let _this = this;
+
+		console.log("Start loading", dataPoint.name);
+		return new Promise(function(resolve, reject)
 		{
-			console.error("Could not load " + url);
-			reject(e.error);
+			let image = new Image();
+			image.addEventListener("load", function()
+			{
+				dataPoint.image = image;
+				for(let label of dataPoint.labels)
+				{
+					if (_this._labels.indexOf(label) === -1)
+					{
+						_this._labels.push(label);
+					}
+				}
+				resolve(dataPoint);
+			});
+			image.addEventListener("error", function(e)
+			{
+				reject("Failed to load " + image.src);
+			});
+			image.src = [folder, dataPoint.name].join("/");
 		});
-	});
-}
+	}
+};
