@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"noImplicitAny": true,
+		"noImplicitThis": true,
 		"target": "es5",
 		"types": [],
 		"lib": ["DOM", "ES2015"],
