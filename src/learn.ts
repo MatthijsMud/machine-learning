@@ -30,6 +30,9 @@ const STEP_SIZE = 5;
 new DataSet().load("data/bolt_sideways").then(function(set)
 {
 	console.log(set.labels);
+	set.asTensor().print();
+
+
 }).catch(function(reason:any)
 {
 	console.error("Failed to load dataset.", reason);
