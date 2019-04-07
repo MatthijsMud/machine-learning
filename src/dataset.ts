@@ -51,7 +51,13 @@ export default class DataSet
 	private _width:number|undefined;
 	private _height:number|undefined;
 
-	private _images:{[key:string]:{labels:Set<string>, image:HTMLImageElement}}
+	private _images:{[key:string]:{labels:Set<string>, image:HTMLImageElement}};
+
+	/**
+	 * While it could have been a set, the standard does not guarantee an order.
+	 * Considering the order should remain unchanged between calls,
+	 */
+	private _labels:string[];
 
 	/**
 	 * @param width
@@ -64,6 +70,7 @@ export default class DataSet
 	{
 		this._state = State.initializing;
 		this._images = {};
+		this._labels = [];
 
 		this._width = width;
 		this._height = height;
@@ -78,6 +85,11 @@ export default class DataSet
 		let _this:DataSet = this;
 		if (_this._state == State.initializing)
 		{
+			// Make sure we are
+			if (_this._labels.indexOf(label) == -1)
+			{
+				_this._labels.push(label);
+			}
 			urls.forEach(function(url)
 			{
 				if (!(url in _this._images))
@@ -90,6 +102,12 @@ export default class DataSet
 			return _this;
 		}
 		throw new TypeError("Data can only be added when initializing.");
+	}
+
+	public labels(): tf.Tensor
+	{
+
+		return tf.tensor([1,1]);
 	}
 
 	/**
