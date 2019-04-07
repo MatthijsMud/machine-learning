@@ -25,11 +25,13 @@ interface DataPoint
 
 export default class DataSet
 {
-	private _labels:Array<string>
+	private _labels:Array<string>;
+	private _dataPoints:Array<DataPoint>;
 
 	public constructor()
 	{
 		this._labels = [];
+		this._dataPoints = [];
 	}
 
 	public async load(folder:string):Promise<DataSet>
@@ -60,7 +62,40 @@ export default class DataSet
 
 	public asTensor():tf.Tensor
 	{
-		return tf.tensor([],[]);
+		// This operation expects all images to be the same size.
+		let canvas = document.createElement("canvas");
+		let ctx = canvas.getContext("2d");
+		let images = [];
+		let width = 0;
+		let height = 0;
+
+		for(let dataPoint of this._dataPoints)
+		{
+			width = dataPoint.image.width;
+			height = dataPoint.image.height;
+			canvas.width = width;
+			canvas.height = height;
+			ctx.clearRect(0,0,width, height);
+			ctx.drawImage(dataPoint.image, 0, 0);
+			let data = ctx.getImageData(0, 0, width, height).data;
+			// Treat the images as grayscale.
+			let image = new Array<Array<number>>(height);
+			for(let y=0; y<height; ++y)
+			{
+				image[y] = new Array<number>(width);
+				for(let x=0; x<width; ++x)
+				{
+					let index = y*width + x;
+					// RGBA image to grayscale image. Since the input images should
+					// already be grayscale images, each channel (aside from transparity)
+					// should be the same value. Pick red.
+					image[y][x] = data[index*4];
+				}
+			}
+			images.push(image);
+		}
+
+		return tf.tensor(images);
 	}
 
 	private loadIndex(folder:string):Promise<Array<DataPoint>>
@@ -108,6 +143,7 @@ export default class DataSet
 						_this._labels.push(label);
 					}
 				}
+				_this._dataPoints.push(dataPoint);
 				resolve(dataPoint);
 			});
 			image.addEventListener("error", function(e)
