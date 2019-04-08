@@ -213,16 +213,16 @@ var DataSet = /** @class */ (function () {
             ctx.clearRect(0, 0, width, height);
             ctx.drawImage(dataPoint.image, 0, 0);
             var data = ctx.getImageData(0, 0, width, height).data;
-            // Treat the images as grayscale.
+            // Create a grayscale image with the same dimensions.
             var image = new Array(height);
-            for (var y = 0; y < height; ++y) {
-                image[y] = new Array(width);
-                for (var x = 0; x < width; ++x) {
+            for (var x = 0; x < width; ++x) {
+                image[x] = new Array(height);
+                for (var y = 0; y < height; ++y) {
                     var index = y * width + x;
                     // RGBA image to grayscale image. Since the input images should
                     // already be grayscale images, each channel (aside from transparity)
                     // should be the same value. Pick red.
-                    image[y][x] = data[index * 4];
+                    image[x][y] = [data[index * 4]];
                 }
             }
             images.push(image);
@@ -304,6 +304,7 @@ exports.default = DataSet;
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+var tf = __webpack_require__(/*! @tensorflow/tfjs */ "@tensorflow/tfjs");
 var dataset_1 = __webpack_require__(/*! ./dataset */ "./src/dataset.ts");
 var IMAGE_WIDTH = 56;
 var IMAGE_HEIGHT = 56;
@@ -314,7 +315,18 @@ var FULL_CIRCLE = 360;
 var STEP_SIZE = 5;
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     console.log(set.labels);
-    set.asTensor().print();
+    var tensor = set.asTensor();
+    var model = tf.sequential();
+    model.add(tf.layers.conv2d({
+        // Our tensor is a list of different images. Its first dimesion is the
+        // number of images stored in it, which should be ignored here.
+        inputShape: tensor.shape.slice(1),
+        // Kernels are typically odd (1, 3, 5, ...) since this works better for
+        // centering on the "pixel" to which they apply.
+        kernelSize: 3,
+        filters: 16,
+        activation: "relu"
+    }));
 }).catch(function (reason) {
     console.error("Failed to load dataset.", reason);
 });
