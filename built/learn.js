@@ -213,7 +213,7 @@ var DataSet = /** @class */ (function () {
     Object.defineProperty(DataSet.prototype, "tensorLabels", {
         get: function () {
             if (this._tensorLabels !== null) {
-                return this._tensor;
+                return this._tensorLabels;
             }
             throw new TypeError("Cannot access labels before they have been loaded.");
         },
