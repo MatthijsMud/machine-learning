@@ -31,7 +31,7 @@ const STEP_SIZE = 5;
 new DataSet().load("data/bolt_sideways").then(function(set)
 {
 	console.log(set.labels);
-	let tensor = set.asTensor();
+	let tensor = set.tensor;
 	tensor.print();
 	
 

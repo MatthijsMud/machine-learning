@@ -27,11 +27,14 @@ export default class DataSet
 {
 	private _labels:Array<string>;
 	private _dataPoints:Array<DataPoint>;
+	
+	private _tensor:tf.Tensor | null;
 
 	public constructor()
 	{
 		this._labels = [];
 		this._dataPoints = [];
+		this._tensor = null;
 	}
 
 	public async load(folder:string):Promise<DataSet>
@@ -50,6 +53,7 @@ export default class DataSet
 			return Promise.all(loadingDataPoints).then(function()
 			{
 				console.log("Finished loading dataset", folder);
+				_this._tensor = _this.asTensor();
 				return _this;
 			});
 		});
@@ -59,8 +63,17 @@ export default class DataSet
 	{
 		return this._labels.slice();
 	}
+	
+	public get tensor():tf.Tensor
+	{
+		if (this._tensor !== null)
+		{
+			return this._tensor;
+		}
+		throw new TypeError("Cannot access tensor before it has loaded.");
+	}
 
-	public asTensor():tf.Tensor
+	private asTensor():tf.Tensor
 	{
 		// This operation expects all images to be the same size.
 		let canvas = document.createElement("canvas");
@@ -94,7 +107,6 @@ export default class DataSet
 			}
 			images.push(image);
 		}
-
 		return tf.tensor(images);
 	}
 
