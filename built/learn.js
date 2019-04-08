@@ -431,7 +431,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     tf.tidy(function () {
                                                         var labelsOfChecked = set.labels.filter(function (_, index) {
-                                                            temp[1].get(0, index) === 1;
+                                                            return temp[1].get(0, index) === 1;
                                                         });
                                                         console.log(labelsOfChecked);
                                                         model.predict(set.tensor.gather([0])).print();

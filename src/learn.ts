@@ -80,7 +80,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				{
 					let labelsOfChecked = set.labels.filter(function(_, index)
 					{
-						temp[1].get(0, index)===1;
+						return temp[1].get(0, index)===1;
 					});
 					console.log(labelsOfChecked);
 					(model.predict(set.tensor.gather([0])) as tf.Tensor).print();
