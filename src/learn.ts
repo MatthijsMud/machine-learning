@@ -40,7 +40,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	let temp = tf.tidy(function()
 	{
 		const size = set.tensor.shape[0];
-		let indices = new Array(size).map((_,i)=>i);
+		let indices = Array.from(new Array(size), (_,i)=>i);
 		shuffle(indices);
 		console.log("Shuffled the indices", indices);
 		

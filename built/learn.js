@@ -397,7 +397,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     console.log(set.labels);
                     temp = tf.tidy(function () {
                         var size = set.tensor.shape[0];
-                        var indices = new Array(size).map(function (_, i) { return i; });
+                        var indices = Array.from(new Array(size), function (_, i) { return i; });
                         shuffle(indices);
                         console.log("Shuffled the indices", indices);
                         var images = [];
