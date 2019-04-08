@@ -30,8 +30,20 @@ const STEP_SIZE = 5;
 new DataSet().load("data/bolt_sideways").then(function(set)
 {
 	console.log(set.labels);
-	set.asTensor().print();
-
+	let tensor = set.asTensor();
+	tensor.print();
+	
+	let model = tf.sequential();
+	model.add(tf.layers.conv2d({
+		// Our tensor is a list of different images. Its first dimesion is the
+		// number of images stored in it, which should be ignored here.
+		inputShape: tensor.shape.slice(1),
+		// Kernels are typically odd (1, 3, 5, ...) since this works better for
+		// centering on the "pixel" to which they apply.
+		kernelSize: 3,
+		filters: 16,
+		activation:"relu"
+	}));
 
 }).catch(function(reason:any)
 {
