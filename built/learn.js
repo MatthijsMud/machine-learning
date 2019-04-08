@@ -229,8 +229,7 @@ var DataSet = /** @class */ (function () {
         var labels = [];
         var width = 0;
         var height = 0;
-        for (var _i = 0, _a = this._dataPoints; _i < _a.length; _i++) {
-            var dataPoint = _a[_i];
+        var _loop_1 = function (dataPoint) {
             width = dataPoint.image.width;
             height = dataPoint.image.height;
             canvas.width = width;
@@ -251,12 +250,14 @@ var DataSet = /** @class */ (function () {
                 }
             }
             images.push(image);
-            var imageLabels = Array(this._labels.length);
-            for (var _b = 0, _c = dataPoint.labels; _b < _c.length; _b++) {
-                var label = _c[_b];
-                imageLabels[this._labels.indexOf(label)] = 1;
-            }
-            labels.push(imageLabels);
+            labels.push(this_1._labels.map(function (label) {
+                return dataPoint.labels.indexOf(label) !== -1 ? 1 : 0;
+            }));
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = this._dataPoints; _i < _a.length; _i++) {
+            var dataPoint = _a[_i];
+            _loop_1(dataPoint);
         }
         this._tensor = tf.tensor(images);
         this._tensorLabels = tf.tensor(labels);

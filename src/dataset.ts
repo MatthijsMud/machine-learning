@@ -119,12 +119,10 @@ export default class DataSet
 				}
 			}
 			images.push(image);
-			let imageLabels:Array<number> = Array<number>(this._labels.length);
-			for (let label of dataPoint.labels)
+			labels.push(this._labels.map(function(label)
 			{
-				imageLabels[this._labels.indexOf(label)] = 1;
-			}
-			labels.push(imageLabels);
+				return dataPoint.labels.indexOf(label)!==-1 ? 1 : 0; 
+			}));
 		}
 		this._tensor = tf.tensor(images);
 		this._tensorLabels = tf.tensor(labels);
