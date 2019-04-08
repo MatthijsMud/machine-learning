@@ -28,14 +28,31 @@ const IMAGE_HEIGHT = 56;
 const FULL_CIRCLE = 360;
 const STEP_SIZE = 5;
 
-new DataSet().load("data/bolt_sideways").then(function(set)
+new DataSet().load("data/bolt_sideways").then(async function(set)
 {
 	console.log(set.labels);
 	let tensor = set.tensor;
 	tensor.print();
 	
-
+	let numberOfTrainings = 0;
+	
 	const model = new Model(tensor.shape.slice(1,4) as [number,number,number], set.labels.length);
+	model.compile({
+		optimizer: "rmsprop",
+		loss: "categorialCrossentropy",
+		metrics: ["accuracy"]
+	});
+	await model.fit(tensor, [], {
+		callbacks: {
+			onBatchEnd: async function(batch, logs)
+			{
+				numberOfTrainings++;
+				console.log("Trained", numberOfTrainings, "times");
+				await tf.nextFrame();
+			}
+		}
+	});
+	
 }).catch(function(reason:any)
 {
 	console.error("Failed to load dataset.", reason);
