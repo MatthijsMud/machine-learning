@@ -1,4 +1,4 @@
-Assignment to learn work with machine learning. In this case the [TensorFlow.js](https://js.tensorflow.org/) framework is used. Any code is written with [TypeScript](https://www.typescriptlang.org/) for its static typing.
+Assignment to learn work with machine learning. In this case the [TensorFlow.js](https://js.tensorflow.org/) framework is used. Any code is written with [TypeScript](https://www.typescriptlang.org/) for its static typing. See the [Live demo](https://matthijsmud.github.io/machine-learning/).
 
 The intent is to distinguish between nuts and bolts. Any other categories that could get added should work on the same principle. In that regard it shouldn't be too hard to add others, but this would require to retrain the model.
 
