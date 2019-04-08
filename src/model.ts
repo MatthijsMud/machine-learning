@@ -18,5 +18,18 @@ import tf = require("@tensorflow/tfjs");
 
 export default class Model extends tf.Sequential
 {
-	
+	constructor(shape:[number,number,number])
+	{
+		super()
+		this.add(tf.layers.conv2d({
+			// Our tensor is a list of different images. Its first dimesion is the
+			// number of images stored in it, which should be ignored here.
+			inputShape: shape,
+			// Kernels are typically odd (1, 3, 5, ...) since this works better for
+			// centering on the "pixel" to which they apply.
+			kernelSize: 3,
+			filters: 16,
+			activation:"relu"
+		}));
+	}
 };

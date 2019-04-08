@@ -17,6 +17,7 @@
 import tf = require("@tensorflow/tfjs");
 
 import DataSet from "./dataset"
+import Model from "./model"
 
 const IMAGE_WIDTH = 56;
 const IMAGE_HEIGHT = 56;
@@ -33,17 +34,7 @@ new DataSet().load("data/bolt_sideways").then(function(set)
 	let tensor = set.asTensor();
 	tensor.print();
 	
-	let model = tf.sequential();
-	model.add(tf.layers.conv2d({
-		// Our tensor is a list of different images. Its first dimesion is the
-		// number of images stored in it, which should be ignored here.
-		inputShape: tensor.shape.slice(1),
-		// Kernels are typically odd (1, 3, 5, ...) since this works better for
-		// centering on the "pixel" to which they apply.
-		kernelSize: 3,
-		filters: 16,
-		activation:"relu"
-	}));
+	const model = new Model(tensor.shape.slice(1,4) as [number,number,number]);
 
 }).catch(function(reason:any)
 {

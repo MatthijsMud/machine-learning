@@ -304,8 +304,8 @@ exports.default = DataSet;
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-var tf = __webpack_require__(/*! @tensorflow/tfjs */ "@tensorflow/tfjs");
 var dataset_1 = __webpack_require__(/*! ./dataset */ "./src/dataset.ts");
+var model_1 = __webpack_require__(/*! ./model */ "./src/model.ts");
 var IMAGE_WIDTH = 56;
 var IMAGE_HEIGHT = 56;
 /**
@@ -316,17 +316,8 @@ var STEP_SIZE = 5;
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     console.log(set.labels);
     var tensor = set.asTensor();
-    var model = tf.sequential();
-    model.add(tf.layers.conv2d({
-        // Our tensor is a list of different images. Its first dimesion is the
-        // number of images stored in it, which should be ignored here.
-        inputShape: tensor.shape.slice(1),
-        // Kernels are typically odd (1, 3, 5, ...) since this works better for
-        // centering on the "pixel" to which they apply.
-        kernelSize: 3,
-        filters: 16,
-        activation: "relu"
-    }));
+    tensor.print();
+    var model = new model_1.default(tensor.shape.slice(1, 4));
 }).catch(function (reason) {
     console.error("Failed to load dataset.", reason);
 });
@@ -365,6 +356,69 @@ function PathGenerator(folder, count) {
         return folder + "/" + (Array(5).join("0") + (1 + index)).slice(-4) + ".png";
     });
 }
+
+
+/***/ }),
+
+/***/ "./src/model.ts":
+/*!**********************!*\
+  !*** ./src/model.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * Copyright 2019 Matthijs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var tf = __webpack_require__(/*! @tensorflow/tfjs */ "@tensorflow/tfjs");
+var Model = /** @class */ (function (_super) {
+    __extends(Model, _super);
+    function Model(shape) {
+        var _this = _super.call(this) || this;
+        _this.add(tf.layers.conv2d({
+            // Our tensor is a list of different images. Its first dimesion is the
+            // number of images stored in it, which should be ignored here.
+            inputShape: shape,
+            // Kernels are typically odd (1, 3, 5, ...) since this works better for
+            // centering on the "pixel" to which they apply.
+            kernelSize: 3,
+            filters: 16,
+            activation: "relu"
+        }));
+        return _this;
+    }
+    return Model;
+}(tf.Sequential));
+exports.default = Model;
+;
 
 
 /***/ }),
