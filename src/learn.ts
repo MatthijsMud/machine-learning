@@ -39,7 +39,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	const model = new Model(tensor.shape.slice(1,4) as [number,number,number], set.labels.length);
 	model.compile({
 		optimizer: "rmsprop",
-		loss: "categorialCrossentropy",
+		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
 	await model.fit(tensor, [], {

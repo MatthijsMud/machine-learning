@@ -374,7 +374,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     model = new model_1.default(tensor.shape.slice(1, 4), set.labels.length);
                     model.compile({
                         optimizer: "rmsprop",
-                        loss: "categorialCrossentropy",
+                        loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
                     return [4 /*yield*/, model.fit(tensor, [], {
