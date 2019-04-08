@@ -163,6 +163,7 @@ var DataSet = /** @class */ (function () {
         this._labels = [];
         this._dataPoints = [];
         this._tensor = null;
+        this._tensorLabels = null;
     }
     DataSet.prototype.load = function (folder) {
         return __awaiter(this, void 0, void 0, function () {
@@ -183,7 +184,7 @@ var DataSet = /** @class */ (function () {
                                 console.groupEnd();
                                 return [2 /*return*/, Promise.all(loadingDataPoints).then(function () {
                                         console.log("Finished loading dataset", folder);
-                                        _this._tensor = _this.asTensor();
+                                        _this.asTensor();
                                         return _this;
                                     })];
                             });
@@ -209,11 +210,23 @@ var DataSet = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DataSet.prototype, "tensorLabels", {
+        get: function () {
+            if (this._tensorLabels !== null) {
+                return this._tensor;
+            }
+            throw new TypeError("Cannot access labels before they have been loaded.");
+        },
+        enumerable: true,
+        configurable: true
+    });
     DataSet.prototype.asTensor = function () {
         // This operation expects all images to be the same size.
         var canvas = document.createElement("canvas");
         var ctx = canvas.getContext("2d");
         var images = [];
+        // For each image the application saves whether it belongs to class, or not.
+        var labels = [];
         var width = 0;
         var height = 0;
         for (var _i = 0, _a = this._dataPoints; _i < _a.length; _i++) {
@@ -238,8 +251,16 @@ var DataSet = /** @class */ (function () {
                 }
             }
             images.push(image);
+            var imageLabels = Array(this._labels.length);
+            for (var _b = 0, _c = dataPoint.labels; _b < _c.length; _b++) {
+                var label = _c[_b];
+                imageLabels[this._labels.indexOf(label)] = 1;
+            }
+            labels.push(imageLabels);
         }
-        return tf.tensor(images);
+        this._tensor = tf.tensor(images);
+        this._tensorLabels = tf.tensor(labels);
+        return this._tensor;
     };
     DataSet.prototype.loadIndex = function (folder) {
         return new Promise(function (resolve, reject) {
@@ -368,18 +389,18 @@ function shuffle(array) {
 }
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     return __awaiter(this, void 0, void 0, function () {
-        var tensor, images, numberOfTrainings, model;
+        var tensor, numberOfTrainings, model;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log(set.labels);
                     tensor = set.tensor;
-                    images = tensor.split(tensor.shape[0], 0);
                     tensor = tf.tidy(function () {
                         var images = tensor.split(tensor.shape[0], 0);
                         shuffle(images);
                         return tf.concat(images);
                     });
+                    set.tensorLabels.print();
                     console.log(tf.memory());
                     numberOfTrainings = 0;
                     model = new model_1.default(tensor.shape.slice(1, 4), set.labels.length);
@@ -388,7 +409,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                         loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
-                    return [4 /*yield*/, model.fit(tensor, tf.tensor([[], [], []]), {
+                    return [4 /*yield*/, model.fit(tensor, tf.tensor([]), {
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
                                     return __awaiter(this, void 0, void 0, function () {

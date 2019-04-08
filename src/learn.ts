@@ -38,14 +38,13 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 {
 	console.log(set.labels);
 	var tensor = set.tensor;
-	let images = tensor.split(tensor.shape[0], 0);
 	tensor = tf.tidy(function()
 	{
 		let images = tensor.split(tensor.shape[0], 0);
 		shuffle(images);
 		return tf.concat(images);
 	});
-	
+	set.tensorLabels.print();
 	console.log(tf.memory());
 	
 	let numberOfTrainings = 0;
@@ -56,7 +55,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
-	await model.fit(tensor, tf.tensor([[],[],[]]), {
+	await model.fit(tensor, tf.tensor([]), {
 		callbacks: {
 			onBatchEnd: async function(batch, logs)
 			{

@@ -29,12 +29,14 @@ export default class DataSet
 	private _dataPoints:Array<DataPoint>;
 	
 	private _tensor:tf.Tensor | null;
+	private _tensorLabels:tf.Tensor | null;
 
 	public constructor()
 	{
 		this._labels = [];
 		this._dataPoints = [];
 		this._tensor = null;
+		this._tensorLabels = null;
 	}
 
 	public async load(folder:string):Promise<DataSet>
@@ -53,7 +55,7 @@ export default class DataSet
 			return Promise.all(loadingDataPoints).then(function()
 			{
 				console.log("Finished loading dataset", folder);
-				_this._tensor = _this.asTensor();
+				_this.asTensor();
 				return _this;
 			});
 		});
@@ -72,13 +74,24 @@ export default class DataSet
 		}
 		throw new TypeError("Cannot access tensor before it has loaded.");
 	}
+	
+	public get tensorLabels():tf.Tensor
+	{
+		if (this._tensorLabels !== null)
+		{
+			return this._tensor;
+		}
+		throw new TypeError("Cannot access labels before they have been loaded.");
+	}
 
 	private asTensor():tf.Tensor
 	{
 		// This operation expects all images to be the same size.
-		let canvas = document.createElement("canvas");
-		let ctx = canvas.getContext("2d");
-		let images = [];
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+		const images = [];
+		// For each image the application saves whether it belongs to class, or not.
+		const labels:Array<Array<number>> = [];
 		let width = 0;
 		let height = 0;
 
@@ -106,8 +119,16 @@ export default class DataSet
 				}
 			}
 			images.push(image);
+			let imageLabels:Array<number> = Array<number>(this._labels.length);
+			for (let label of dataPoint.labels)
+			{
+				imageLabels[this._labels.indexOf(label)] = 1;
+			}
+			labels.push(imageLabels);
 		}
-		return tf.tensor(images);
+		this._tensor = tf.tensor(images);
+		this._tensorLabels = tf.tensor(labels);
+		return this._tensor;
 	}
 
 	private loadIndex(folder:string):Promise<Array<DataPoint>>
