@@ -418,6 +418,9 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                         metrics: ["accuracy"]
                     });
                     return [4 /*yield*/, model.fit(temp[0], temp[1], {
+                            shuffle: true,
+                            epochs: 10,
+                            validationSplit: 0.3,
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
                                     return __awaiter(this, void 0, void 0, function () {
@@ -426,6 +429,13 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                 case 0:
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
+                                                    tf.tidy(function () {
+                                                        var labelsOfChecked = set.labels.filter(function (_, index) {
+                                                            temp[1].get(0, index) === 1;
+                                                        });
+                                                        console.log(labelsOfChecked);
+                                                        model.predict(set.tensor.gather([0])).print();
+                                                    });
                                                     return [4 /*yield*/, tf.nextFrame()];
                                                 case 1:
                                                     _a.sent();

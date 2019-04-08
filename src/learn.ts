@@ -67,11 +67,25 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		metrics: ["accuracy"]
 	});
 	await model.fit(temp[0], temp[1], {
+		shuffle: true,
+		epochs: 10,
+		validationSplit: 0.3,
 		callbacks: {
 			onBatchEnd: async function(batch, logs)
 			{
 				numberOfTrainings++;
 				console.log("Trained", numberOfTrainings, "times");
+				
+				tf.tidy(function()
+				{
+					let labelsOfChecked = set.labels.filter(function(_, index)
+					{
+						temp[1].get(0, index)===1;
+					});
+					console.log(labelsOfChecked);
+					(model.predict(set.tensor.gather([0])) as tf.Tensor).print();
+				});
+				
 				await tf.nextFrame();
 			}
 		}
@@ -81,6 +95,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 {
 	console.error("Failed to load dataset.", reason);
 });
+
 /*
 new DataSet(IMAGE_WIDTH, IMAGE_HEIGHT)
 .add("nut", PathGenerator("data/nut_sideways", FULL_CIRCLE / STEP_SIZE))
