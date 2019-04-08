@@ -354,21 +354,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tf = __webpack_require__(/*! @tensorflow/tfjs */ "@tensorflow/tfjs");
 var dataset_1 = __webpack_require__(/*! ./dataset */ "./src/dataset.ts");
 var model_1 = __webpack_require__(/*! ./model */ "./src/model.ts");
-var IMAGE_WIDTH = 56;
-var IMAGE_HEIGHT = 56;
 /**
- * Objects are being rotated.
+ * @brief Shuffles the provided array (in place).
  */
-var FULL_CIRCLE = 360;
-var STEP_SIZE = 5;
+function shuffle(array) {
+    var size = array.length;
+    for (var i = 0; i < size; ++i) {
+        var temp = array[i];
+        var other = Math.floor(Math.random() * size);
+        array[i] = array[other];
+        array[other] = temp;
+    }
+}
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     return __awaiter(this, void 0, void 0, function () {
-        var tensor, numberOfTrainings, model;
+        var tensor, images, numberOfTrainings, model;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log(set.labels);
                     tensor = set.tensor;
+                    images = tensor.split(tensor.shape[0], 0);
+                    tensor.dispose();
+                    shuffle(images);
+                    tensor = tf.concat(images);
+                    console.log(tf.memory());
                     tensor.print();
                     numberOfTrainings = 0;
                     model = new model_1.default(tensor.shape.slice(1, 4), set.labels.length);
@@ -377,7 +387,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                         loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
-                    return [4 /*yield*/, model.fit(tensor, [], {
+                    return [4 /*yield*/, model.fit(tensor, tf.tensor([[], [], []]), {
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
                                     return __awaiter(this, void 0, void 0, function () {

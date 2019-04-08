@@ -19,19 +19,32 @@ import tf = require("@tensorflow/tfjs");
 import DataSet from "./dataset"
 import Model from "./model"
 
-const IMAGE_WIDTH = 56;
-const IMAGE_HEIGHT = 56;
-
 /**
- * Objects are being rotated.
+ * @brief Shuffles the provided array (in place).
  */
-const FULL_CIRCLE = 360;
-const STEP_SIZE = 5;
+function shuffle(array:any[])
+{
+	const size = array.length;
+	for(let i=0; i<size; ++i)
+	{
+		let temp = array[i];
+		const other = Math.floor(Math.random() * size);
+		array[i] = array[other];
+		array[other] = temp;
+	}
+}
 
 new DataSet().load("data/bolt_sideways").then(async function(set)
 {
 	console.log(set.labels);
-	let tensor = set.tensor;
+	var tensor = set.tensor;
+	let images = tensor.split(tensor.shape[0], 0);
+	tensor.dispose();
+	
+	shuffle(images);
+	tensor = tf.concat(images);
+	console.log(tf.memory());
+	
 	tensor.print();
 	
 	let numberOfTrainings = 0;
@@ -42,7 +55,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
-	await model.fit(tensor, [], {
+	await model.fit(tensor, tf.tensor([[],[],[]]), {
 		callbacks: {
 			onBatchEnd: async function(batch, logs)
 			{
