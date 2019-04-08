@@ -54,8 +54,6 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		return [tf.concat(images), tf.concat(labels)];
 	});
 	
-	
-	set.tensorLabels.print();
 	console.log(tf.memory());
 	
 	let numberOfTrainings = 0;
@@ -83,7 +81,10 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 						return temp[1].get(0, index)===1;
 					});
 					console.log(labelsOfChecked);
-					(model.predict(set.tensor.gather([0])) as tf.Tensor).print();
+					(model.predict(set.tensor.gather([0])) as tf.Tensor).data().then(function(data)
+					{
+						console.log(data);
+					});
 				});
 				
 				await tf.nextFrame();

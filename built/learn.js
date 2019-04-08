@@ -408,7 +408,6 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                         });
                         return [tf.concat(images), tf.concat(labels)];
                     });
-                    set.tensorLabels.print();
                     console.log(tf.memory());
                     numberOfTrainings = 0;
                     model = new model_1.default(temp[0].shape.slice(1, 4), set.labels.length);
@@ -434,7 +433,9 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                             return temp[1].get(0, index) === 1;
                                                         });
                                                         console.log(labelsOfChecked);
-                                                        model.predict(set.tensor.gather([0])).print();
+                                                        model.predict(set.tensor.gather([0])).data().then(function (data) {
+                                                            console.log(data);
+                                                        });
                                                     });
                                                     return [4 /*yield*/, tf.nextFrame()];
                                                 case 1:
