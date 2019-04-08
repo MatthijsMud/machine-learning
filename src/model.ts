@@ -18,7 +18,7 @@ import tf = require("@tensorflow/tfjs");
 
 export default class Model extends tf.Sequential
 {
-	constructor(shape:[number,number,number])
+	constructor(shape:[number,number,number], numberOfLabels:number)
 	{
 		super()
 		this.add(tf.layers.conv2d({
@@ -31,5 +31,13 @@ export default class Model extends tf.Sequential
 			filters: 16,
 			activation:"relu"
 		}));
+		
+		this.add(tf.layers.maxPool2d({poolSize: 2,strides: 2}));
+		this.add(tf.layers.conv2d({kernelSize: 3, filters: 32, activation: "relu"}));
+		this.add(tf.layers.maxPool2d({poolSize: 2, strides: 2}));
+		this.add(tf.layers.conv2d({kernelSize: 3, filters: 32, activation: "relu"}));
+		this.add(tf.layers.flatten({}));
+		this.add(tf.layers.dense({units:64, activation: "relu"}));
+		this.add(tf.layers.dense({units: numberOfLabels, activation: "softmax"}));
 	}
 };

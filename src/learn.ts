@@ -34,8 +34,8 @@ new DataSet().load("data/bolt_sideways").then(function(set)
 	let tensor = set.asTensor();
 	tensor.print();
 	
-	const model = new Model(tensor.shape.slice(1,4) as [number,number,number]);
 
+	const model = new Model(tensor.shape.slice(1,4) as [number,number,number], set.labels.length);
 }).catch(function(reason:any)
 {
 	console.error("Failed to load dataset.", reason);
