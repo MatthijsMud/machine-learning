@@ -390,27 +390,34 @@ function shuffle(array) {
 }
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     return __awaiter(this, void 0, void 0, function () {
-        var tensor, numberOfTrainings, model;
+        var temp, numberOfTrainings, model;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log(set.labels);
-                    tensor = set.tensor;
-                    tensor = tf.tidy(function () {
-                        var images = tensor.split(tensor.shape[0], 0);
-                        shuffle(images);
-                        return tf.concat(images);
+                    temp = tf.tidy(function () {
+                        var size = set.tensor.shape[0];
+                        var indices = new Array(size).map(function (_, i) { return i; });
+                        shuffle(indices);
+                        console.log("Shuffled the indices", indices);
+                        var images = [];
+                        var labels = [];
+                        indices.forEach(function (index) {
+                            images[index] = tf.gather(set.tensor, [index]);
+                            labels[index] = tf.gather(set.tensorLabels, [index]);
+                        });
+                        return [tf.concat(images), tf.concat(labels)];
                     });
                     set.tensorLabels.print();
                     console.log(tf.memory());
                     numberOfTrainings = 0;
-                    model = new model_1.default(tensor.shape.slice(1, 4), set.labels.length);
+                    model = new model_1.default(temp[0].shape.slice(1, 4), set.labels.length);
                     model.compile({
                         optimizer: "rmsprop",
                         loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
-                    return [4 /*yield*/, model.fit(tensor, tf.tensor([]), {
+                    return [4 /*yield*/, model.fit(temp[0], temp[1], {
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
                                     return __awaiter(this, void 0, void 0, function () {

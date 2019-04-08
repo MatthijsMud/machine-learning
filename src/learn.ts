@@ -37,25 +37,36 @@ function shuffle(array:any[])
 new DataSet().load("data/bolt_sideways").then(async function(set)
 {
 	console.log(set.labels);
-	var tensor = set.tensor;
-	tensor = tf.tidy(function()
+	let temp = tf.tidy(function()
 	{
-		let images = tensor.split(tensor.shape[0], 0);
-		shuffle(images);
-		return tf.concat(images);
+		const size = set.tensor.shape[0];
+		let indices = new Array(size).map((_,i)=>i);
+		shuffle(indices);
+		console.log("Shuffled the indices", indices);
+		
+		const images:Array<tf.Tensor> = [];
+		const labels:Array<tf.Tensor> = [];
+		indices.forEach(function(index)
+		{
+			images[index] = tf.gather(set.tensor, [index]);
+			labels[index] = tf.gather(set.tensorLabels, [index]);
+		});
+		return [tf.concat(images), tf.concat(labels)];
 	});
+	
+	
 	set.tensorLabels.print();
 	console.log(tf.memory());
 	
 	let numberOfTrainings = 0;
 	
-	const model = new Model(tensor.shape.slice(1,4) as [number,number,number], set.labels.length);
+	const model = new Model(temp[0].shape.slice(1,4) as [number,number,number], set.labels.length);
 	model.compile({
 		optimizer: "rmsprop",
 		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
-	await model.fit(tensor, tf.tensor([]), {
+	await model.fit(temp[0], temp[1], {
 		callbacks: {
 			onBatchEnd: async function(batch, logs)
 			{
