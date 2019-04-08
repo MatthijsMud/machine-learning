@@ -78,18 +78,18 @@ export default class DataSet
 			ctx.clearRect(0,0,width, height);
 			ctx.drawImage(dataPoint.image, 0, 0);
 			let data = ctx.getImageData(0, 0, width, height).data;
-			// Treat the images as grayscale.
-			let image = new Array<Array<number>>(height);
-			for(let y=0; y<height; ++y)
+			// Create a grayscale image with the same dimensions.
+			let image = new Array<Array<Array<number>>>(height);
+			for(let x=0; x<width; ++x)
 			{
-				image[y] = new Array<number>(width);
-				for(let x=0; x<width; ++x)
+				image[x] = new Array<Array<number>>(height);
+				for(let y=0; y<height; ++y)
 				{
 					let index = y*width + x;
 					// RGBA image to grayscale image. Since the input images should
 					// already be grayscale images, each channel (aside from transparity)
 					// should be the same value. Pick red.
-					image[y][x] = data[index*4];
+					image[x][y] = [data[index*4]];
 				}
 			}
 			images.push(image);
