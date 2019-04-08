@@ -375,11 +375,12 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     console.log(set.labels);
                     tensor = set.tensor;
                     images = tensor.split(tensor.shape[0], 0);
-                    tensor.dispose();
-                    shuffle(images);
-                    tensor = tf.concat(images);
+                    tensor = tf.tidy(function () {
+                        var images = tensor.split(tensor.shape[0], 0);
+                        shuffle(images);
+                        return tf.concat(images);
+                    });
                     console.log(tf.memory());
-                    tensor.print();
                     numberOfTrainings = 0;
                     model = new model_1.default(tensor.shape.slice(1, 4), set.labels.length);
                     model.compile({

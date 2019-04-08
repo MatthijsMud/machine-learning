@@ -39,13 +39,14 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	console.log(set.labels);
 	var tensor = set.tensor;
 	let images = tensor.split(tensor.shape[0], 0);
-	tensor.dispose();
+	tensor = tf.tidy(function()
+	{
+		let images = tensor.split(tensor.shape[0], 0);
+		shuffle(images);
+		return tf.concat(images);
+	});
 	
-	shuffle(images);
-	tensor = tf.concat(images);
 	console.log(tf.memory());
-	
-	tensor.print();
 	
 	let numberOfTrainings = 0;
 	
