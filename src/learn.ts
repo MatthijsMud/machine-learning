@@ -61,7 +61,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	let numberOfTrainings = 0;
 	
 	const data = temp.data.split(1,0);
-	const sparseLabels = temp.data.split(1,0);
+	const sparseLabels = temp.sparseLabels.split(1,0);
 	const labels = [temp.textLabels.slice(0,data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
 	
 	
