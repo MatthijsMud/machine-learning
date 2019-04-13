@@ -413,8 +413,8 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     console.log("Shuflfed labels", temp.textLabels);
                     console.log("", tf.memory());
                     numberOfTrainings = 0;
-                    data = temp.data.split(1, 0);
-                    sparseLabels = temp.sparseLabels.split(1, 0);
+                    data = temp.data.split(2);
+                    sparseLabels = temp.sparseLabels.split(2);
                     labels = [temp.textLabels.slice(0, data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
                     model = new model_1.default(data[0].shape.slice(1, 4), set.labels.length);
                     model.compile({
