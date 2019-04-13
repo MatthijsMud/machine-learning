@@ -434,9 +434,14 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     tf.tidy(function () {
                                                         model.predict(set.tensor.gather([0])).data().then(function (predictions) {
+                                                            var interleaved = [];
+                                                            for (var i = 0; i < predictions.length; ++i) {
+                                                                interleaved[i] = { likelyhood: predictions[i], label: temp.textLabels[i] };
+                                                            }
+                                                            interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood); });
                                                             console.groupCollapsed("Predictions for", temp.textLabels[0]);
-                                                            predictions.forEach(function (prediction, index) {
-                                                                console.log(temp.textLabels[index], (prediction * 100).toFixed(2) + "%");
+                                                            interleaved.forEach(function (a) {
+                                                                console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%");
                                                             });
                                                             console.groupEnd();
                                                             //console.log(data);

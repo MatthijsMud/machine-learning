@@ -81,10 +81,19 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				{
 					(model.predict(set.tensor.gather([0])) as tf.Tensor).data().then(function(predictions:Float32Array)
 					{
-						console.groupCollapsed("Predictions for", temp.textLabels[0]);
-						predictions.forEach(function(prediction:number, index:number)
+						const interleaved:{likelyhood:number, label:string}[] = [];
+						for (let i=0; i<predictions.length;++i)
 						{
-							console.log(temp.textLabels[index], (prediction * 100).toFixed(2) + "%" );
+							interleaved[i] = {likelyhood: predictions[i], label: temp.textLabels[i]}
+						}
+						interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood)});
+						
+						
+						console.groupCollapsed("Predictions for", temp.textLabels[0]);
+						interleaved.forEach(function(a)
+						{
+							
+							console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%" );
 						});
 						console.groupEnd();
 						//console.log(data);
