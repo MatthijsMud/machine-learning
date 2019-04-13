@@ -60,13 +60,18 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	
 	let numberOfTrainings = 0;
 	
+	const data = temp.data.split(2);
+	const sparseLabels = temp.data.split(2);
+	const labels = [temp.textLabels.slice(0,data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
+	
+	
 	const model = new Model(temp.data.shape.slice(1,4) as [number,number,number], set.labels.length);
 	model.compile({
 		optimizer: "rmsprop",
 		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
-	await model.fit(temp.data, temp.sparseLabels, {
+	await model.fit(data[0], sparseLabels[0], {
 		shuffle: true,
 		epochs: 100,
 		batchSize: 32,
@@ -77,29 +82,34 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				numberOfTrainings++;
 				console.log("Trained", numberOfTrainings, "times");
 				
-				tf.tidy(function()
-				{
-					(model.predict(set.tensor.gather([0])) as tf.Tensor).data().then(function(predictions:Float32Array)
-					{
-						const interleaved:{likelyhood:number, label:string}[] = [];
-						for (let i=0; i<predictions.length;++i)
-						{
-							interleaved[i] = {likelyhood: predictions[i], label: temp.textLabels[i]}
-						}
-						interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood)});
-						
-						
-						console.groupCollapsed("Predictions for", temp.textLabels[0]);
-						interleaved.forEach(function(a)
-						{
-							
-							console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%" );
-						});
-						console.groupEnd();
-						//console.log(data);
-					});
-				});
 				
+				console.groupCollapsed("Predictions");
+				labels[0].forEach(function(label, index)
+				{
+					tf.tidy(function()
+					{
+						(model.predict(data[1].gather([index])) as tf.Tensor).data().then(function(predictions:Float32Array)
+						{
+							const interleaved:{likelyhood:number, label:string}[] = [];
+							for (let i=0; i<predictions.length;++i)
+							{
+								interleaved[i] = {likelyhood: predictions[i], label: temp.textLabels[i]}
+							}
+							interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood) * -1});
+							
+							
+							console.groupCollapsed("Predictions for", label);
+							interleaved.forEach(function(a)
+							{
+								
+								console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%" );
+							});
+							console.groupEnd();
+							//console.log(data);
+						});
+					});
+					console.groupEnd();
+				});
 				await tf.nextFrame();
 			}
 		}

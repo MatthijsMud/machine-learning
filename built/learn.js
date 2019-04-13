@@ -390,7 +390,7 @@ function shuffle(array) {
 }
 new dataset_1.default().load("data/bolt_sideways").then(function (set) {
     return __awaiter(this, void 0, void 0, function () {
-        var temp, numberOfTrainings, model;
+        var temp, numberOfTrainings, data, sparseLabels, labels, model;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -413,13 +413,16 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     console.log("Shuflfed labels", temp.textLabels);
                     console.log("", tf.memory());
                     numberOfTrainings = 0;
+                    data = temp.data.split(2);
+                    sparseLabels = temp.data.split(2);
+                    labels = [temp.textLabels.slice(0, data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
                     model = new model_1.default(temp.data.shape.slice(1, 4), set.labels.length);
                     model.compile({
                         optimizer: "rmsprop",
                         loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
-                    return [4 /*yield*/, model.fit(temp.data, temp.sparseLabels, {
+                    return [4 /*yield*/, model.fit(data[0], sparseLabels[0], {
                             shuffle: true,
                             epochs: 100,
                             batchSize: 32,
@@ -432,20 +435,24 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                 case 0:
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
-                                                    tf.tidy(function () {
-                                                        model.predict(set.tensor.gather([0])).data().then(function (predictions) {
-                                                            var interleaved = [];
-                                                            for (var i = 0; i < predictions.length; ++i) {
-                                                                interleaved[i] = { likelyhood: predictions[i], label: temp.textLabels[i] };
-                                                            }
-                                                            interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood); });
-                                                            console.groupCollapsed("Predictions for", temp.textLabels[0]);
-                                                            interleaved.forEach(function (a) {
-                                                                console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%");
+                                                    console.groupCollapsed("Predictions");
+                                                    labels[0].forEach(function (label, index) {
+                                                        tf.tidy(function () {
+                                                            model.predict(data[1].gather([index])).data().then(function (predictions) {
+                                                                var interleaved = [];
+                                                                for (var i = 0; i < predictions.length; ++i) {
+                                                                    interleaved[i] = { likelyhood: predictions[i], label: temp.textLabels[i] };
+                                                                }
+                                                                interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood) * -1; });
+                                                                console.groupCollapsed("Predictions for", label);
+                                                                interleaved.forEach(function (a) {
+                                                                    console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%");
+                                                                });
+                                                                console.groupEnd();
+                                                                //console.log(data);
                                                             });
-                                                            console.groupEnd();
-                                                            //console.log(data);
                                                         });
+                                                        console.groupEnd();
                                                     });
                                                     return [4 /*yield*/, tf.nextFrame()];
                                                 case 1:
