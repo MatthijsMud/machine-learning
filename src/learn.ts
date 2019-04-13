@@ -47,11 +47,11 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		const images:Array<tf.Tensor> = [];
 		const labels:Array<tf.Tensor> = [];
 		const textLabels:Array<string> = [];
-		indices.forEach(function(index)
+		indices.forEach(function(index, i)
 		{
-			images[index] = tf.gather(set.tensor, [index]);
-			labels[index] = tf.gather(set.tensorLabels, [index]);
-			textLabels[index] = set.labels[index];
+			images[i] = tf.gather(set.tensor, [index]);
+			labels[i] = tf.gather(set.tensorLabels, [index]);
+			textLabels[i] = set.labels[index];
 		});
 		return { data: tf.concat(images), sparseLabels:tf.concat(labels), textLabels: textLabels};
 	});
@@ -83,7 +83,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 						console.groupCollapsed("Predictions for", temp.textLabels[0]);
 						predictions.forEach(function(prediction:number, index:number)
 						{
-							console.log(temp.textLabels[index], (prediction * 100).toFixed(2));
+							console.log(temp.textLabels[index], (prediction * 100).toFixed(2) + "%" );
 						});
 						console.groupEnd();
 						//console.log(data);
