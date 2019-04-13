@@ -46,25 +46,27 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 		
 		const images:Array<tf.Tensor> = [];
 		const labels:Array<tf.Tensor> = [];
+		const textLabels:Array<string> = [];
 		indices.forEach(function(index)
 		{
 			images[index] = tf.gather(set.tensor, [index]);
 			labels[index] = tf.gather(set.tensorLabels, [index]);
+			textLabels[index] = set.labels[index];
 		});
-		return [tf.concat(images), tf.concat(labels)];
+		return { data: tf.concat(images), sparseLabels:tf.concat(labels), textLabels: textLabels};
 	});
-	
-	console.log(tf.memory());
+	console.log("Shuflfed labels", temp.textLabels);
+	console.log("", tf.memory());
 	
 	let numberOfTrainings = 0;
 	
-	const model = new Model(temp[0].shape.slice(1,4) as [number,number,number], set.labels.length);
+	const model = new Model(temp.data.shape.slice(1,4) as [number,number,number], set.labels.length);
 	model.compile({
 		optimizer: "rmsprop",
 		loss: "categoricalCrossentropy",
 		metrics: ["accuracy"]
 	});
-	await model.fit(temp[0], temp[1], {
+	await model.fit(temp.data, temp.sparseLabels, {
 		shuffle: true,
 		epochs: 10,
 		validationSplit: 0.3,
@@ -76,14 +78,15 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				
 				tf.tidy(function()
 				{
-					let labelsOfChecked = set.labels.filter(function(_, index)
+					(model.predict(set.tensor.gather([0])) as tf.Tensor).data().then(function(predictions:Float32Array)
 					{
-						return temp[1].get(0, index)===1;
-					});
-					console.log(labelsOfChecked);
-					(model.predict(set.tensor.gather([0])) as tf.Tensor).data().then(function(data)
-					{
-						console.log(data);
+						console.groupCollapsed("Predictions for", temp.textLabels[0]);
+						predictions.forEach(function(prediction:number, index:number)
+						{
+							console.log(temp.textLabels[index], (prediction * 100).toFixed(2));
+						});
+						console.groupEnd();
+						//console.log(data);
 					});
 				});
 				

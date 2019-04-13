@@ -402,21 +402,24 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                         console.log("Shuffled the indices", indices);
                         var images = [];
                         var labels = [];
+                        var textLabels = [];
                         indices.forEach(function (index) {
                             images[index] = tf.gather(set.tensor, [index]);
                             labels[index] = tf.gather(set.tensorLabels, [index]);
+                            textLabels[index] = set.labels[index];
                         });
-                        return [tf.concat(images), tf.concat(labels)];
+                        return { data: tf.concat(images), sparseLabels: tf.concat(labels), textLabels: textLabels };
                     });
-                    console.log(tf.memory());
+                    console.log("Shuflfed labels", temp.textLabels);
+                    console.log("", tf.memory());
                     numberOfTrainings = 0;
-                    model = new model_1.default(temp[0].shape.slice(1, 4), set.labels.length);
+                    model = new model_1.default(temp.data.shape.slice(1, 4), set.labels.length);
                     model.compile({
                         optimizer: "rmsprop",
                         loss: "categoricalCrossentropy",
                         metrics: ["accuracy"]
                     });
-                    return [4 /*yield*/, model.fit(temp[0], temp[1], {
+                    return [4 /*yield*/, model.fit(temp.data, temp.sparseLabels, {
                             shuffle: true,
                             epochs: 10,
                             validationSplit: 0.3,
@@ -429,12 +432,13 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     tf.tidy(function () {
-                                                        var labelsOfChecked = set.labels.filter(function (_, index) {
-                                                            return temp[1].get(0, index) === 1;
-                                                        });
-                                                        console.log(labelsOfChecked);
-                                                        model.predict(set.tensor.gather([0])).data().then(function (data) {
-                                                            console.log(data);
+                                                        model.predict(set.tensor.gather([0])).data().then(function (predictions) {
+                                                            console.groupCollapsed("Predictions for", temp.textLabels[0]);
+                                                            predictions.forEach(function (prediction, index) {
+                                                                console.log(temp.textLabels[index], (prediction * 100).toFixed(2));
+                                                            });
+                                                            console.groupEnd();
+                                                            //console.log(data);
                                                         });
                                                     });
                                                     return [4 /*yield*/, tf.nextFrame()];
