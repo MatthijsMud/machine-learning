@@ -68,8 +68,8 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	});
 	await model.fit(temp.data, temp.sparseLabels, {
 		shuffle: true,
-		epochs: 20,
-		batchSize: 10,
+		epochs: 100,
+		batchSize: 32,
 		validationSplit: 0.3,
 		callbacks: {
 			onBatchEnd: async function(batch, logs)

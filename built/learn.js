@@ -421,8 +421,8 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     });
                     return [4 /*yield*/, model.fit(temp.data, temp.sparseLabels, {
                             shuffle: true,
-                            epochs: 20,
-                            batchSize: 10,
+                            epochs: 100,
+                            batchSize: 32,
                             validationSplit: 0.3,
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
