@@ -449,7 +449,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                                 }
                                                                 interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood) * -1; });
                                                                 predictionsForLabel.appendChild(document.createElement("em")).innerText = label;
-                                                                var listing = predictionsForIteration.appendChild(document.createElement("ol"));
+                                                                var listing = predictionsForLabel.appendChild(document.createElement("ol"));
                                                                 interleaved.forEach(function (a) {
                                                                     var prediction = listing.appendChild(document.createElement("li"));
                                                                     prediction.appendChild(document.createTextNode(a.label + ": "));

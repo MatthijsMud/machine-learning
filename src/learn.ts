@@ -101,7 +101,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 							interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood) * -1});
 							
 							predictionsForLabel.appendChild(document.createElement("em")).innerText = label;
-							let listing = predictionsForIteration.appendChild(document.createElement("ol"));
+							let listing = predictionsForLabel.appendChild(document.createElement("ol"));
 							interleaved.forEach(function(a)
 							{
 								let prediction = listing.appendChild(document.createElement("li"));
