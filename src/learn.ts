@@ -64,6 +64,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 	const sparseLabels = temp.sparseLabels.split(2);
 	const labels = [temp.textLabels.slice(0,data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
 	
+	console.log("Training with", labels[0]);
 	
 	const model = new Model(data[0].shape.slice(1,4) as [number,number,number], set.labels.length);
 	model.compile({
@@ -84,7 +85,7 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				
 				
 				let predictionsForIteration = document.createElement("div");
-				predictionsForIteration.classList.add("iteration-predications");
+				predictionsForIteration.classList.add("iteration-predictions");
 				predictionsForIteration.appendChild(document.createElement("h2")).innerText = "Iteration " + numberOfTrainings;
 				labels[0].forEach(function(label, index)
 				{
