@@ -430,12 +430,13 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                             callbacks: {
                                 onBatchEnd: function (batch, logs) {
                                     return __awaiter(this, void 0, void 0, function () {
+                                        var predictionsForIteration;
                                         return __generator(this, function (_a) {
                                             switch (_a.label) {
                                                 case 0:
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
-                                                    console.groupCollapsed("Predictions");
+                                                    predictionsForIteration = document.createElement("div");
                                                     labels[0].forEach(function (label, index) {
                                                         tf.tidy(function () {
                                                             model.predict(data[1].gather([index])).data().then(function (predictions) {
@@ -444,16 +445,19 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                                     interleaved[i] = { likelyhood: predictions[i], label: temp.textLabels[i] };
                                                                 }
                                                                 interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood) * -1; });
+                                                                predictionsForIteration.appendChild(document.createTextNode("Label"));
+                                                                var listing = predictionsForIteration.appendChild(document.createElement("ol"));
                                                                 console.groupCollapsed("Predictions for", label);
                                                                 interleaved.forEach(function (a) {
-                                                                    console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%");
+                                                                    var prediction = listing.appendChild(document.createElement("li"));
+                                                                    prediction.appendChild(document.createTextNode(label));
+                                                                    prediction.appendChild(document.createTextNode((a.likelyhood * 100).toFixed(2) + "%"));
                                                                 });
-                                                                console.groupEnd();
                                                                 //console.log(data);
                                                             });
                                                         });
                                                     });
-                                                    console.groupEnd();
+                                                    document.body.appendChild(predictionsForIteration);
                                                     return [4 /*yield*/, tf.nextFrame()];
                                                 case 1:
                                                     _a.sent();

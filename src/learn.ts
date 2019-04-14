@@ -83,7 +83,8 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				console.log("Trained", numberOfTrainings, "times");
 				
 				
-				console.groupCollapsed("Predictions");
+				let predictionsForIteration = document.createElement("div");
+				
 				labels[0].forEach(function(label, index)
 				{
 					tf.tidy(function()
@@ -97,19 +98,20 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 							}
 							interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood) * -1});
 							
-							
+							predictionsForIteration.appendChild(document.createTextNode("Label"));
+							let listing = predictionsForIteration.appendChild(document.createElement("ol"));
 							console.groupCollapsed("Predictions for", label);
 							interleaved.forEach(function(a)
 							{
-								
-								console.log(a.label, (a.likelyhood * 100).toFixed(2) + "%" );
+								let prediction = listing.appendChild(document.createElement("li"));
+								prediction.appendChild(document.createTextNode(label));
+								prediction.appendChild(document.createTextNode((a.likelyhood * 100).toFixed(2) + "%"));
 							});
-							console.groupEnd();
 							//console.log(data);
 						});
 					});
 				});
-				console.groupEnd();
+				document.body.appendChild(predictionsForIteration);
 				await tf.nextFrame();
 			}
 		}
