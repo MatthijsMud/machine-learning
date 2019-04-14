@@ -182,9 +182,14 @@ var DataSet = /** @class */ (function () {
                                     loadingDataPoints[loadingDataPoints.length] = _this.loadDataPoint(folder, dataPoint);
                                 }
                                 console.groupEnd();
-                                return [2 /*return*/, Promise.all(loadingDataPoints).then(function () {
+                                return [2 /*return*/, Promise.all(loadingDataPoints).then(function (datapoints) {
                                         console.log("Finished loading dataset", folder);
                                         _this.asTensor();
+                                        var datasetContainer = document.body.appendChild(document.createElement("div"));
+                                        for (var _i = 0, datapoints_1 = datapoints; _i < datapoints_1.length; _i++) {
+                                            var datapoint = datapoints_1[_i];
+                                            datasetContainer.appendChild(datapoint.image);
+                                        }
                                         return _this;
                                     })];
                             });
@@ -416,6 +421,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                     data = temp.data.split(2);
                     sparseLabels = temp.sparseLabels.split(2);
                     labels = [temp.textLabels.slice(0, data[0].shape[0]), temp.textLabels.slice(data[0].shape[0])];
+                    console.log("Training with", labels[0]);
                     model = new model_1.default(data[0].shape.slice(1, 4), set.labels.length);
                     model.compile({
                         optimizer: "rmsprop",
@@ -437,7 +443,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     predictionsForIteration = document.createElement("div");
-                                                    predictionsForIteration.classList.add("iteration-predications");
+                                                    predictionsForIteration.classList.add("iteration-predictions");
                                                     predictionsForIteration.appendChild(document.createElement("h2")).innerText = "Iteration " + numberOfTrainings;
                                                     labels[0].forEach(function (label, index) {
                                                         var predictionsForLabel = predictionsForIteration.appendChild(document.createElement("div"));
