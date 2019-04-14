@@ -108,8 +108,8 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 							//console.log(data);
 						});
 					});
-					console.groupEnd();
 				});
+				console.groupEnd();
 				await tf.nextFrame();
 			}
 		}

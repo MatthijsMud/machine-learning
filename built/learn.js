@@ -452,8 +452,8 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                                 //console.log(data);
                                                             });
                                                         });
-                                                        console.groupEnd();
                                                     });
+                                                    console.groupEnd();
                                                     return [4 /*yield*/, tf.nextFrame()];
                                                 case 1:
                                                     _a.sent();
