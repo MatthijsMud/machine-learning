@@ -17,11 +17,19 @@
 		{
 			background-color: #ddd;
 		}
+		.js .js-yes {}
+		.js .js-no { display: none; }
 		</style>
 	</head>
 	<body>
-		<h1></h1>
+		<script>
+		document.body.classList.add("js");
+		</script>
 		
+		<h1>Machine learning - orientation guessing</h1>
+		<div class="js-no">
+			JavaScript appears to be disabled.
+		</div>
 		<!-- Placing scripts at the end avoids the need to wait for body to load. -->
 		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.2/dist/tf.min.js"></script>
 		<script src="built/learn.js"></script>
