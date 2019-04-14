@@ -437,7 +437,10 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     numberOfTrainings++;
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     predictionsForIteration = document.createElement("div");
+                                                    predictionsForIteration.classList.add("iteration-predications");
                                                     labels[0].forEach(function (label, index) {
+                                                        var predictionsForLabel = predictionsForIteration.appendChild(document.createElement("div"));
+                                                        predictionsForLabel.classList.add("label-predictions");
                                                         tf.tidy(function () {
                                                             model.predict(data[1].gather([index])).data().then(function (predictions) {
                                                                 var interleaved = [];
@@ -445,15 +448,13 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                                     interleaved[i] = { likelyhood: predictions[i], label: temp.textLabels[i] };
                                                                 }
                                                                 interleaved.sort(function (a, b) { return (a.likelyhood - b.likelyhood) * -1; });
-                                                                predictionsForIteration.appendChild(document.createTextNode("Label"));
+                                                                predictionsForLabel.appendChild(document.createElement("em")).innerText = label;
                                                                 var listing = predictionsForIteration.appendChild(document.createElement("ol"));
-                                                                console.groupCollapsed("Predictions for", label);
                                                                 interleaved.forEach(function (a) {
                                                                     var prediction = listing.appendChild(document.createElement("li"));
-                                                                    prediction.appendChild(document.createTextNode(label));
+                                                                    prediction.appendChild(document.createTextNode(a.label + ": "));
                                                                     prediction.appendChild(document.createTextNode((a.likelyhood * 100).toFixed(2) + "%"));
                                                                 });
-                                                                //console.log(data);
                                                             });
                                                         });
                                                     });

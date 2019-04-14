@@ -84,9 +84,11 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 				
 				
 				let predictionsForIteration = document.createElement("div");
-				
+				predictionsForIteration.classList.add("iteration-predications");
 				labels[0].forEach(function(label, index)
 				{
+					let predictionsForLabel = predictionsForIteration.appendChild(document.createElement("div"));
+					predictionsForLabel.classList.add("label-predictions");
 					tf.tidy(function()
 					{
 						(model.predict(data[1].gather([index])) as tf.Tensor).data().then(function(predictions:Float32Array)
@@ -98,16 +100,14 @@ new DataSet().load("data/bolt_sideways").then(async function(set)
 							}
 							interleaved.sort((a, b)=>{return (a.likelyhood - b.likelyhood) * -1});
 							
-							predictionsForIteration.appendChild(document.createTextNode("Label"));
+							predictionsForLabel.appendChild(document.createElement("em")).innerText = label;
 							let listing = predictionsForIteration.appendChild(document.createElement("ol"));
-							console.groupCollapsed("Predictions for", label);
 							interleaved.forEach(function(a)
 							{
 								let prediction = listing.appendChild(document.createElement("li"));
-								prediction.appendChild(document.createTextNode(label));
+								prediction.appendChild(document.createTextNode(a.label + ": "));
 								prediction.appendChild(document.createTextNode((a.likelyhood * 100).toFixed(2) + "%"));
 							});
-							//console.log(data);
 						});
 					});
 				});
