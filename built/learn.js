@@ -438,6 +438,7 @@ new dataset_1.default().load("data/bolt_sideways").then(function (set) {
                                                     console.log("Trained", numberOfTrainings, "times");
                                                     predictionsForIteration = document.createElement("div");
                                                     predictionsForIteration.classList.add("iteration-predications");
+                                                    predictionsForIteration.appendChild(document.createElement("h2")).innerText = "Iteration " + numberOfTrainings;
                                                     labels[0].forEach(function (label, index) {
                                                         var predictionsForLabel = predictionsForIteration.appendChild(document.createElement("div"));
                                                         predictionsForLabel.classList.add("label-predictions");
