@@ -52,10 +52,16 @@ export default class DataSet
 				 loadingDataPoints[loadingDataPoints.length] = _this.loadDataPoint(folder, dataPoint);
 			}
 			console.groupEnd();
-			return Promise.all(loadingDataPoints).then(function()
+			return Promise.all(loadingDataPoints).then(function(datapoints)
 			{
 				console.log("Finished loading dataset", folder);
 				_this.asTensor();
+				let datasetContainer = document.body.appendChild(document.createElement("div"));
+				
+				for(let datapoint of datapoints)
+				{
+					datasetContainer.appendChild(datapoint.image);
+				}
 				return _this;
 			});
 		});
